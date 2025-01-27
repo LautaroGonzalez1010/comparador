@@ -8,19 +8,12 @@
 </head>
 <body>
     <div class="container">
-        <h1>Comparador de Inventarios</h1>
-        <form id="upload-form">
+        <h1>Comparador de Inventarios 😎👩🏼‍🤝‍🧑🏾</h1>
+        <form action="https://comparador.onrender.com/comparar" method="POST" enctype="multipart/form-data">
             <label for="inventarios">Sube tus archivos Excel:</label>
-            <input type="file" id="inventarios" multiple required>
+            <input type="file" name="inventarios" id="inventarios" multiple required>
             <button type="submit">Comparar</button>
         </form>
     </div>
-
-    <!-- Incluir la librería XLSX.js para procesar archivos Excel -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- Tu archivo de script personalizado -->
-    <script src="app.js"></script>
 </body>
 </html>
- 

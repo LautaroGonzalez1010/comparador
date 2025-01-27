@@ -1,3 +1,26 @@
+const express = require("express");
+const multer = require("multer");
+const XLSX = require("xlsx");
+const fs = require("fs");
+const path = require("path");
+
+const app = express();
+const PORT = 3000;
+
+// Configurar multer para guardar archivos en la carpeta 'uploads'
+const upload = multer({ dest: "uploads/" });
+
+// Servir archivos estáticos desde la carpeta 'public'
+app.use(express.static("public"));
+
+// Función para cargar un inventario desde un archivo Excel
+const cargarInventario = (ruta) => {
+    const libro = XLSX.readFile(ruta);
+    const hoja = libro.Sheets[libro.SheetNames[0]];
+    return XLSX.utils.sheet_to_json(hoja);
+};
+
+// Función para comparar inventarios
 const compararInventarios = (archivos) => {
     const resultados = { agregados: [], eliminados: [], modificados: [] };
 
@@ -39,7 +62,6 @@ const compararInventarios = (archivos) => {
                     "Estado Ahora": item["Estado"] || "N/A",
                 };
 
-                // Verificar si hubo algún cambio
                 if (
                     cambios["Componente Antes"] !== cambios["Componente Ahora"] ||
                     cambios["Cantidad Antes"] !== cambios["Cantidad Ahora"] ||
@@ -58,3 +80,40 @@ const compararInventarios = (archivos) => {
 
     return resultados;
 };
+
+// Ruta para manejar la subida de archivos y la comparación
+app.post("/comparar", upload.array("inventarios"), (req, res) => {
+    try {
+        if (!req.files || req.files.length < 2) {
+            return res.status(400).send("Debes subir al menos dos archivos Excel.");
+        }
+
+        const archivos = req.files.map(file => file.path);
+        const resultados = compararInventarios(archivos);
+
+        // Crear archivo Excel de comparación
+        const libro = XLSX.utils.book_new();
+        ["agregados", "eliminados", "modificados"].forEach(tipo => {
+            if (resultados[tipo].length > 0) {
+                const hoja = XLSX.utils.json_to_sheet(resultados[tipo]);
+                XLSX.utils.book_append_sheet(libro, hoja, tipo.charAt(0).toUpperCase() + tipo.slice(1));
+            }
+        });
+
+        const archivoResultado = path.join(__dirname, "public", "resultado_comparacion.xlsx");
+        XLSX.writeFile(libro, archivoResultado);
+
+        res.download(archivoResultado, "resultado_comparacion.xlsx", () => {
+            req.files.forEach(file => fs.unlinkSync(file.path)); // Eliminar archivos temporales
+            fs.unlinkSync(archivoResultado); // Eliminar resultado después de la descarga
+        });
+    } catch (error) {
+        console.error("Error durante la comparación:", error);
+        res.status(500).send("Error al procesar la comparación.");
+    }
+});
+
+// Iniciar el servidor
+app.listen(PORT, () => {
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});

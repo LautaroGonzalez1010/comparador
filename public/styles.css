@@ -1,6 +1,6 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
+    background-color: #c9f8c0;
     text-align: center;
     margin-top: 50px;
 }
@@ -8,10 +8,10 @@ body {
 .container {
     max-width: 500px;
     margin: auto;
-    background: white;
+    background: rgb(128, 129, 128);
     padding: 20px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    border-radius: 10px;
+    box-shadow: 10 10 50px rgba(255, 0, 0, 0.1);
+    border-radius: 30px;
 }
 
 input, button {
